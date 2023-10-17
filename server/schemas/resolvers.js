@@ -1,12 +1,12 @@
-const { User, Book } = require('../models');
-const { signToken, AuthenticationError } = require('../utils/auth');
+const { User, Book } = require("../models");
+const { signToken, AuthenticationError } = require("../utils/auth");
 
 const resolvers = {
   Query: {
     //query the single user based on their logged in status
     me: async (parent, args, context) => {
       if (context.user) {
-        return User.findOne({ _id: context.user._id })
+        return User.findOne({ _id: context.user._id }).select("-password");
       }
       throw AuthenticationError;
     },
@@ -39,35 +39,32 @@ const resolvers = {
     },
     //if user is logged in, save a book to user's saved books
     saveBook: async (parent, { savedData }, context) => {
-      console.log("hitting saveBook")
+      console.log("hitting saveBook");
       if (context.user) {
-       
         const update = await User.findOneAndUpdate(
           { _id: context.user._id },
           { $addToSet: { savedBooks: savedData } },
-          { new: true}
-        )
-        
+          { new: true }
+        );
+
         return update;
       }
       throw AuthenticationError;
-      ('You need to be logged in!');
+      ("You need to be logged in!");
     },
     //remove a book from savedbooks
     removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
-       
-
-       const removeBook = await User.findOneAndUpdate(
+        const removeBook = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: {bookId} } },
-          { new: true}
+          { $pull: { savedBooks: { bookId } } },
+          { new: true }
         );
 
         return removeBook;
       }
       throw AuthenticationError;
-    }
+    },
   },
 };
 
